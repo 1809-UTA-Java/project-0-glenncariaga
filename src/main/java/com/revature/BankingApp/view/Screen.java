@@ -1,31 +1,36 @@
 package com.revature.BankingApp.view;
 
-import java.util.UUID;
+import java.security.Provider.Service;
+import java.util.ArrayList;
+
+import com.revature.BankingApp.controllers.BankOperations;
 import com.revature.BankingApp.controllers.Services;
-import com.revature.BankingApp.models.Accounts;
+import com.revature.BankingApp.models.Account;
 import com.revature.BankingApp.models.User;
 
 public class Screen {
-	public void splash() {
+	public static void splash() {
 		System.out.println("Welcome to the Banking App");
 	}
 	
-	public String loginScreen() {
+	public static String loginScreen() {
 		System.out.println(	"Please make a selection: "+ '\n'+
 							"0.  Logout"+'\n' +
 							"1.  Register New User" +'\n' +
 							"2.  Login Existing User"+'\n');
 		String choice = Services.cliInput("Entry => ");
-		
-		if(!choice.equals("0")||!choice.equals("1")||!choice.equals("2")) {
-			System.out.println("Please make a valid selection");
-			loginScreen();
-		}
-		
+		System.out.println(choice);
 		return choice;
 	}
 	
-	public String userScreen() {
+	public static String[] authentication() {
+		String[] usrPswd=new String[2];
+		usrPswd[0] = Services.cliInput("Please Enter a Username: ");
+		usrPswd[1] = Services.cliInput("Enter a password: ");
+		return usrPswd;
+	}
+	
+	public static String userScreen() {
 		System.out.print("What would like to do today?"+ '\n'+
 				"0.  Logout"+'\n'+
 				"1.  Open new Account"+ '\n'+
@@ -34,32 +39,41 @@ public class Screen {
 		return choice;
 	}
 	
-	public String addAccountScreen() {
+	public static String addAccountScreen() {
 		System.out.println("Would you like to add an account?);");
 		String choice = Services.cliInput("Entry=> ");
 		return choice;
 	}
 	
-	public String addAnotherAccountScreen() {
+	public static String addAnotherAccountScreen() {
 		System.out.println("Would you like to add another account?);");
 		String choice = Services.cliInput("Entry=> ");
 		return choice;
 	}
 	
-	public Object registration() {
-		String userId=UUID.randomUUID().toString(); 
+	public static Object registration() {
 		String userName;
-		String role; 
+		String password="0";
+		String password2 ="2";
 		
 		System.out.println("User Registration:");
 		userName = Services.cliInput("Enter a username: ");
-		role = Services.cliInput("Enter a role, for example, customer:  ");
-		User user =new User(userId, userName, role);
+		
+		while (!password.equals(password2)) {
+			password = Services.cliInput("Please Enter a Password=> ");
+			password2= Services.cliInput("Please Verify your Password => " );
+		}
+		
+		User user =BankOperations.addNewUser(userName, password);
 		return user;
 	}
 	
-	public void viewAccounts(Accounts accounts) {
-		for(String object: accounts) {
+	public static void viewAccounts(ArrayList<Account> accounts) {
+		System.out.println("AcctID              Balance");
+		int counter=1;
+		for(Account object: accounts) {
+			counter = counter++;
+			System.out.println(counter +". "+object.accountId+"         "+object.balance);
 			
 		}
 	}

@@ -1,55 +1,64 @@
 package com.revature.BankingApp.controllers;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import com.revature.BankingApp.models.Account;
-import com.revature.BankingApp.models.Accounts;
+import com.revature.BankingApp.models.Transaction;
 import com.revature.BankingApp.models.User;
 
 public class BankOperations {
+	
 	public static Account openAccount() {
-		String accountId = UUID.randomUUID().toString();
-		float balance = 0;
-		Account newAccount = new Account(accountId,balance, true);
+		Account newAccount = new Account();
 		return newAccount;
 	}
 	
 	public static ArrayList<Account> closeAccount(String accountId, ArrayList<Account> accounts) {
-		int index;
-		for(int i = 0; i< accounts.size();i++) {
-			if(accounts.get(i).getAccountId().equals(accountId)) {
-				index = i;
-			}
-		}
-		
-		accounts.indexOf(accountId);
+		int index = accounts.indexOf(accountId);		
 		Account closingAccount = (Account) accounts.get(index);
-		closingAccount.setOpen(false);
-		accounts.set(index, closingAccount);
+		closingAccount.open = true;
 		return accounts;
 	}
 	
-	public static String withdraw(Account acct, float withdrawal) {
-		float newBalance = acct.getBalance() - withdrawal;
+	public static Account withdraw(Account acct, float withdrawal) {
+		float newBalance = acct.balance - withdrawal;
 		if(newBalance < 0) {
-			return "error";
+			System.out.println("Not Enough money in Account!");
+			
+		}else {
+			acct.balance = newBalance;
 		}
 		
-		acct.setBalance(newBalance);
-		return "success";
+		return acct;
 	}
 	
-	public static String deposit(Account acct, float deposit) {
-		float newBalance = acct.getBalance() +deposit;
-		acct.setBalance(newBalance);
-		return "success";
+	public static Account deposit(Account acct, float deposit) {
+		acct.balance = acct.balance +deposit;
+		return acct;
 	}
 	
-	public static String addNewUser(User user) {
+	public static User addNewUser(String userName, String password) {
+		User user = new User();
+		user.role = "customer";
+		user.userName = userName;
+		user.password = password;
+		return user;
+	}
+	
+	public static void logout(ArrayList<Account> accounts, ArrayList<Transaction> transactions, ArrayList<User> users) {
 		
 		
-		return "success";
+		System.exit(0);
 	}
 	
+	public static boolean authenticate(String[] usrPswd, ArrayList<User> accounts) {
+		if(accounts.contains(usrPswd[0])) {
+			int index = accounts.indexOf(usrPswd[0]);
+			if(accounts.get(index).password.equals(usrPswd[1])) {
+				return true;
+			}
+			
+		}
+		return false;
+	}
 }
