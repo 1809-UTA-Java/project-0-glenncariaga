@@ -42,6 +42,9 @@ public class BankOperations {
 		user.role = "customer";
 		user.userName = userName;
 		user.password = password;
+		user.linkedAccounts = new ArrayList<String>();
+		
+		System.out.println(user.password+user.role+user.userName);
 		return user;
 	}
 	
@@ -51,13 +54,12 @@ public class BankOperations {
 		System.exit(0);
 	}
 	
-	public static boolean authenticate(String[] usrPswd, ArrayList<User> accounts) {
-		if(accounts.contains(usrPswd[0])) {
-			int index = accounts.indexOf(usrPswd[0]);
-			if(accounts.get(index).password.equals(usrPswd[1])) {
+	public static boolean authenticate(String[] usrPswd, ArrayList<User> users) {
+		
+		for(User user:users) {
+			if(user.userName.equals(usrPswd[0])&&user.password.equals(usrPswd[1])) {
 				return true;
 			}
-			
 		}
 		return false;
 	}

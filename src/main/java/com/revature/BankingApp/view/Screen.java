@@ -25,6 +25,7 @@ public class Screen {
 	
 	public static String[] authentication() {
 		String[] usrPswd=new String[2];
+		System.out.println("Please Log in");
 		usrPswd[0] = Services.cliInput("Please Enter a Username: ");
 		usrPswd[1] = Services.cliInput("Enter a password: ");
 		return usrPswd;
@@ -34,7 +35,7 @@ public class Screen {
 		System.out.print("What would like to do today?"+ '\n'+
 				"0.  Logout"+'\n'+
 				"1.  Open new Account"+ '\n'+
-				"2.  View Accounts '\n'");
+				"2.  View Accounts"+ '\n');
 		String choice = Services.cliInput("Entry=> ");
 		return choice;
 	}
@@ -51,7 +52,7 @@ public class Screen {
 		return choice;
 	}
 	
-	public static Object registration() {
+	public static User registration() {
 		String userName;
 		String password="0";
 		String password2 ="2";

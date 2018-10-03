@@ -1,11 +1,11 @@
 package com.revature.BankingApp.controllers;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -15,7 +15,7 @@ public class Services {
 		System.out.print(msg);
 		String input = sc.nextLine();
 		
-		sc.close();
+//		sc.close();
 		return input;
 	}
 	
@@ -38,11 +38,13 @@ public class Services {
 				new ObjectInputStream( 
 						new FileInputStream(fromFile))){
 			obj =  (ArrayList<T>) ois.readObject();
-		}catch(IOException ex) {
-			ex.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return new ArrayList<T>();
+		}catch(FileNotFoundException ex) {
+			return new ArrayList<T>();
+		} catch(IOException ex) {
+			ex.printStackTrace();
 		}
 		return obj;
 	}
