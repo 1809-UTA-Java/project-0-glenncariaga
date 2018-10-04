@@ -19,6 +19,7 @@ public class BankOperations {
 		UserAccount ua = new UserAccount();
 		ua.AccountId = accountId;
 		ua.userId = userId;
+		System.out.println(ua);
 		return ua;
 	}
 	
@@ -38,21 +39,72 @@ public class BankOperations {
 		return user;
 	}
 	
-	public static Account withdraw(Account acct, float withdrawal) {
-		float newBalance = acct.balance - withdrawal;
+	public static Account withdraw(String acct, float withdrawal, ArrayList<Account> accounts, String userId, ArrayList<UserAccount> userAccounts) {
+		boolean found = false;
+		boolean owner = false;
+		Account activeAccount=new Account();
+		for(Account account:accounts) {
+			if(acct.equals(account.accountId)) {
+				activeAccount =account;
+				found =true;
+			}
+		}
+		
+		if(!found) {
+			System.out.println("Account Not Found!");
+			return null;
+		}
+		
+		for(UserAccount ua : userAccounts) {
+			if(ua.AccountId.equals(activeAccount.accountId)&&ua.userId.equals(userId)) {
+				owner = true;
+			}
+		}
+		
+		if(!owner) {
+			System.out.println("You don't own this account!");
+			return null;
+		}
+		
+		
+		float newBalance = activeAccount.balance - withdrawal;
+		
+		if(withdrawal <=0) {
+			System.out.println("Please enter an amount greater than 0.01!");
+			return null;
+		}
+		
 		if(newBalance < 0) {
 			System.out.println("Not Enough money in Account!");
 			
 		}else {
-			acct.balance = newBalance;
+			activeAccount.balance = newBalance;
 		}
 		
-		return acct;
+		return activeAccount;
 	}
 	
-	public static Account deposit(Account acct, float deposit) {
-		acct.balance = acct.balance +deposit;
-		return acct;
+	public static Account deposit(String acct, float deposit, ArrayList<Account>accounts) {
+		boolean found = false;
+		Account activeAccount=new Account();
+		for(Account account:accounts) {
+			if(acct.equals(account.accountId)) {
+				activeAccount =account;
+				found =true;
+			}
+		}
+		
+		if(deposit <=0) {
+			System.out.println("Please enter an amount greater than 0.01!");
+			return null;
+		}
+		
+		if(!found) {
+			System.out.println("Account Not Found!");
+			return null;
+		}
+		activeAccount.balance = activeAccount.balance +deposit;
+		return activeAccount;
 	}
 	
 	public static void logout(Store store) {

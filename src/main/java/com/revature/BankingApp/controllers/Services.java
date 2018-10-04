@@ -1,5 +1,6 @@
 package com.revature.BankingApp.controllers;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -26,7 +27,14 @@ public class Services {
 	}
 
 	public static String writeToFile(Object obj, String toFile) {
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(toFile))) {
+		File checkFile = new File(toFile);
+		if(checkFile.exists()) {
+			checkFile.delete();
+		}
+		
+		try (ObjectOutputStream oos = 
+				new ObjectOutputStream(
+						new FileOutputStream(toFile))) {
 			oos.writeObject(obj);
 			return "Success";
 		} catch (IOException ex) {
@@ -38,10 +46,11 @@ public class Services {
 
 	public static Store readToObj(String fromFile) {
 		Store obj = null;
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fromFile))) {
-			obj = (Store) ois.readObject();
+		try (ObjectInputStream ois = 
+				new ObjectInputStream(
+						new FileInputStream(fromFile))) {
+			obj =  (Store) ois.readObject();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			Store store = new Store();
 			store.accounts = new ArrayList<Account>();
 			store.transactions = new ArrayList<Transaction>();

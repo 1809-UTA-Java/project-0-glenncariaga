@@ -1,11 +1,13 @@
 package com.revature.BankingApp.view;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.revature.BankingApp.controllers.BankOperations;
 import com.revature.BankingApp.controllers.Services;
 import com.revature.BankingApp.models.Account;
 import com.revature.BankingApp.models.User;
+import com.revature.BankingApp.models.UserAccount;
 
 public class Screen {
 	public static void splash() {
@@ -34,17 +36,10 @@ public class Screen {
 		System.out.println("0.  Logout");
 		System.out.println("1.  Open new Account");
 		System.out.println("2.  View Accounts");
+		System.out.println("3.  Transfer Funds to another account");
+		System.out.println("4.  Withdraw Funds from an account");
+		System.out.println("5.  Deposit Funds to an account.");
 		String choice = Services.cliInput("Entry=> ");
-		return choice;
-	}
-
-	public static String accountOperations(Account account) {
-		System.out.println("Account: ");
-		System.out.println("0.  Exit");
-		System.out.println("1.  Deposit");
-		System.out.println("2.  Withdrawal");
-		System.out.println("3.  Transfer");
-		String choice = Services.cliInput("Entry => ");
 		return choice;
 	}
 
@@ -77,34 +72,49 @@ public class Screen {
 		return user;
 	}
 
-	public static void viewAccounts(ArrayList<Account> accounts) {
-		System.out.println("AcctID              Balance");
+	public static void viewAccounts(ArrayList<Account> accounts, ArrayList<UserAccount> userAccounts, User user) {
+		ArrayList<Account> ownedAccounts = new ArrayList<Account>();
+		for(Account account: accounts) {
+			for(UserAccount linked: userAccounts) {
+				if(account.accountId.equals(linked.AccountId)&&linked.userId.equals(user.userId)) {
+					ownedAccounts.add(account);
+				}
+			}
+		}
+		System.out.println("Accounts related to this User: "+ownedAccounts.size());
+		System.out.println("AcctID                                      Balance");
 		int counter = 1;
-		for (Account object : accounts) {
+		for (Account object : ownedAccounts) {
 			counter = counter++;
 			System.out.println(counter + ". " + object.accountId + "         " + object.balance);
 
 		}
+		Services.cliInput("");
 	}
 
-	public static void transferFunds() {
+	public static String[] transferFunds() {
 		System.out.println("Transfer Funds:");
-		String accountId = Services.cliInput("Transfer to Which Account? =>");
+		String toAccountId = Services.cliInput("Transfer FROM which Account? => ");
+		String fromAccountId = Services.cliInput("Transfer TO Which Account? => ");
 		String amount = Services.cliInput("How much to transfer? =>");
-		
+		String[] list = {toAccountId, fromAccountId, amount};
+		return list;
 	}
 
-	public static void withdrawFunds() {
+	public static String[] withdrawFunds() {
 		System.out.println("Withdraw Funds:");
-		String accountId = Services.cliInput("Transfer to Which Account? =>");
-		String amount = Services.cliInput("How much to transfer? =>");
-		
+		String accountId = Services.cliInput("Withdraw from which Account? =>");
+		String amount = Services.cliInput("How much to withdraw? =>");
+		String[] list = {accountId, amount};
+		return list;
 	}
 
-	public static void depositFunds() {
+	public static String[] depositFunds() {
 		System.out.println("Deposit Funds:");
-		String accountId = Services.cliInput("Transfer to Which Account? =>");
-		String amount = Services.cliInput("How much to transfer? =>");
+		String accountId = Services.cliInput("Deposit to which Account? =>");
+		String amount = Services.cliInput("How much to deposit? =>");
+		String[] list = {accountId, amount};
+		return list;
 		
 	}
 

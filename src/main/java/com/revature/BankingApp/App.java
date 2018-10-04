@@ -1,6 +1,8 @@
 package com.revature.BankingApp;
 
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import com.revature.BankingApp.controllers.BankOperations;
 import com.revature.BankingApp.controllers.Services;
@@ -16,12 +18,11 @@ import com.revature.BankingApp.view.Screen;
  *
  */
 public class App {
+
 	public static void main(String[] args) {
-		// Initialize State load files, if it exists, if not, new instance
-		// of each arraylist
-		
+
 		Store store = Services.readToObj("store");
-		ArrayList<User >users = store.users;
+		ArrayList<User> users = store.users;
 		ArrayList<Account> accounts = store.accounts;
 		ArrayList<Transaction> transactions = store.transactions;
 		ArrayList<UserAccount> userAccounts = store.userAccounts;
@@ -46,7 +47,7 @@ public class App {
 			default:
 
 			}
-			
+
 			Services.clearTerminal();
 
 			// this is the screen to login a user
@@ -68,32 +69,64 @@ public class App {
 					loggedInUser = BankOperations.getUserInfo(usrPswd[0], users);
 				}
 			}
-		}
-		
-		Services.clearTerminal();
-		
-		// the user screen, after authentication
-		switch (Screen.userScreen(loggedInUser)) {
-		case "0":
-			BankOperations.logout(store);
-			break;
-		case "1":
-			if (Screen.addAccountScreen().contentEquals("y")) {
-				Account acct = BankOperations.openAccount();
-				BankOperations.linkAccount(acct.accountId, loggedInUser.userId);
-				Services.writeToFile(store, "store");
-			}
-			break;
-		case "2":
-			Screen.viewAccounts(accounts);
-			break;
-		case "3":
-			Screen.transferFunds();
-		case "4":
-			Screen.withdrawFunds();
-		case "5":
-			Screen.depositFunds();
-		}
+		}//end of loginScreen
 
+		Services.clearTerminal();
+
+		// the user screen, after authentication
+		boolean userScreen = false;
+		
+		while (!userScreen) {
+			switch (Screen.userScreen(loggedInUser)) {
+			case "0":
+				BankOperations.logout(store);
+				break;
+			case "1":
+				if (Screen.addAccountScreen().contentEquals("y")) {
+					Account acct = BankOperations.openAccount();
+					userAccounts.add(BankOperations.linkAccount(acct.accountId, loggedInUser.userId));
+					accounts.add(acct);
+					Services.writeToFile(store, "store");
+				}
+				break;
+			case "2":
+				Screen.viewAccounts(accounts,userAccounts, loggedInUser);
+				break;
+			case "3":
+				String[] transferFunds =
+				Screen.transferFunds();
+				break;
+				
+			case "4":
+				String[] withdrawFunds =
+					Screen.withdrawFunds();
+				Account newAccount = BankOperations.withdraw(withdrawFunds[0],Float.parseFloat( withdrawFunds[1]), accounts, loggedInUser.userId, userAccounts);
+				if(newAccount != null) {
+					for(Account acc: accounts) {
+						if(newAccount.accountId.equals(acc.accountId)) {
+							acc = newAccount;
+						}
+					}
+				}
+				Services.writeToFile(store, "store");
+				break;
+				
+			case "5":
+				String[] depositFunds = 
+					Screen.depositFunds();
+				Account newDepositAccount = BankOperations.deposit(depositFunds[0], Float.parseFloat(depositFunds[1]), accounts);
+				if(newDepositAccount != null) {
+					for(Account acc: accounts) {
+						if(newDepositAccount.accountId.equals(acc.accountId)) {
+							acc = newDepositAccount;
+						}
+					}
+				}
+				break;
+			}
+		}// end of userScreen switch case
+
+		Scanner sc = new Scanner(System.in);
+		sc.close();
 	}
 }
