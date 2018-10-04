@@ -9,43 +9,72 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import com.revature.BankingApp.models.Account;
+import com.revature.BankingApp.models.Store;
+import com.revature.BankingApp.models.Transaction;
+import com.revature.BankingApp.models.User;
+import com.revature.BankingApp.models.UserAccount;
+
 public class Services {
 	public static String cliInput(String msg) {
 		Scanner sc = new Scanner(System.in);
 		System.out.print(msg);
 		String input = sc.nextLine();
-		
+
 //		sc.close();
 		return input;
 	}
-	
+
 	public static String writeToFile(Object obj, String toFile) {
-		try(ObjectOutputStream oos = 
-				new ObjectOutputStream(
-						new FileOutputStream(toFile))){
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(toFile))) {
 			oos.writeObject(obj);
 			return "Success";
-		}catch(IOException ex) {
+		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-		
+
 		return "Error has occurred";
 	}
-	
-	public static <T> ArrayList<T> readToObj(String fromFile) {
-		ArrayList<T> obj = null;
-		try(ObjectInputStream ois = 
-				new ObjectInputStream( 
-						new FileInputStream(fromFile))){
-			obj =  (ArrayList<T>) ois.readObject();
+
+	public static Store readToObj(String fromFile) {
+		Store obj = null;
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fromFile))) {
+			obj = (Store) ois.readObject();
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			return new ArrayList<T>();
-		}catch(FileNotFoundException ex) {
-			return new ArrayList<T>();
-		} catch(IOException ex) {
+			Store store = new Store();
+			store.accounts = new ArrayList<Account>();
+			store.transactions = new ArrayList<Transaction>();
+			store.users = new ArrayList<User>();
+			store.userAccounts = new ArrayList<UserAccount>();
+			return store;
+		} catch (FileNotFoundException ex) {
+			Store store = new Store();
+			store.accounts = new ArrayList<Account>();
+			store.transactions = new ArrayList<Transaction>();
+			store.users = new ArrayList<User>();
+			store.userAccounts = new ArrayList<UserAccount>();
+			return store;
+		} catch (IOException ex) {
 			ex.printStackTrace();
+		}
+
+		if (obj.accounts == null) {
+			obj.accounts = new ArrayList<Account>();
+		}
+		if (obj.transactions == null) {
+			obj.transactions = new ArrayList<Transaction>();
+		}
+		if (obj.users == null) {
+			obj.users = new ArrayList<User>();
+		}
+		if (obj.userAccounts == null) {
+			obj.userAccounts = new ArrayList<UserAccount>();
 		}
 		return obj;
 	}
+
+	public static void clearTerminal() {
+	}
+
 }

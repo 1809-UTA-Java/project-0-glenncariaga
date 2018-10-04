@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.UUID;
 
 public class Transaction {
+
 	public String transactionID= UUID.randomUUID().toString();
 	public String userId;
 	public String accountId;
