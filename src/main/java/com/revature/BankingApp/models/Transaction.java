@@ -11,8 +11,9 @@ public class Transaction implements Serializable {
 	public String userId;
 	public String accountId;
 	public boolean reviewed = false;
-	public boolean approval;
+	public Boolean approval=null;
 	public String action;
 	public float amount;
+	public String reviewer;
 	public Date date= new Date();
 }

@@ -1,8 +1,6 @@
 package com.revature.BankingApp.view;
 
 import java.util.ArrayList;
-import java.util.List;
-
 import com.revature.BankingApp.controllers.BankOperations;
 import com.revature.BankingApp.controllers.Services;
 import com.revature.BankingApp.models.Account;
@@ -16,7 +14,7 @@ public class Screen {
 
 	public static String loginScreen() {
 		System.out.println("Please make a selection: ");
-		System.out.println("0.  Logout");
+		System.out.println("0.  Exit Program");
 		System.out.println("1.  Register New User");
 		System.out.println("2.  Login Existing User");
 		String choice = Services.cliInput("Entry => ");
@@ -55,14 +53,15 @@ public class Screen {
 		return choice;
 	}
 
-	public static User registration() {
-		String userName;
+	public static User registration(ArrayList<User> users) {
+		String userName = new String();
 		String password = "0";
 		String password2 = "2";
 
 		System.out.println("User Registration:");
-		userName = Services.cliInput("Enter a username: ");
-
+		do {
+			userName = Services.cliInput("Enter a username: ");
+		} while (BankOperations.checkUserNameDup(users, userName));
 		while (!password.equals(password2)) {
 			password = Services.cliInput("Please Enter a Password=> ");
 			password2 = Services.cliInput("Please Verify your Password => ");
@@ -74,14 +73,14 @@ public class Screen {
 
 	public static void viewAccounts(ArrayList<Account> accounts, ArrayList<UserAccount> userAccounts, User user) {
 		ArrayList<Account> ownedAccounts = new ArrayList<Account>();
-		for(Account account: accounts) {
-			for(UserAccount linked: userAccounts) {
-				if(account.accountId.equals(linked.AccountId)&&linked.userId.equals(user.userId)) {
+		for (Account account : accounts) {
+			for (UserAccount linked : userAccounts) {
+				if (account.accountId.equals(linked.AccountId) && linked.userId.equals(user.userId)) {
 					ownedAccounts.add(account);
 				}
 			}
 		}
-		System.out.println("Accounts related to this User: "+ownedAccounts.size());
+		System.out.println("Accounts related to this User: " + ownedAccounts.size());
 		System.out.println("AcctID                                      Balance");
 		int counter = 1;
 		for (Account object : ownedAccounts) {
@@ -92,30 +91,54 @@ public class Screen {
 		Services.cliInput("");
 	}
 
-	public static String[] transferFunds() {
+	public static String[] transferFunds(ArrayList<Account> accounts) {
 		System.out.println("Transfer Funds:");
-		String toAccountId = Services.cliInput("Transfer FROM which Account? => ");
-		String fromAccountId = Services.cliInput("Transfer TO Which Account? => ");
+		String fromAccountId = new String();
+		String toAccountId = new String();
+		do {
+			fromAccountId = Services.cliInput("Transfer FROM which Account? => ");
+		}while (BankOperations.checkAccountId(accounts, fromAccountId));
+		do {
+			toAccountId = Services.cliInput("Transfer TO Which Account? => ");
+		}while (BankOperations.checkAccountId(accounts, toAccountId));
+
 		String amount = Services.cliInput("How much to transfer? =>");
-		String[] list = {toAccountId, fromAccountId, amount};
+		String[] list = { toAccountId, fromAccountId, amount };
 		return list;
 	}
 
-	public static String[] withdrawFunds() {
+	public static String[] withdrawFunds(ArrayList<Account> accounts) {
 		System.out.println("Withdraw Funds:");
-		String accountId = Services.cliInput("Withdraw from which Account? =>");
+		String accountId = new String();
+		do {
+			accountId = Services.cliInput("Withdraw from which Account? =>");
+		} while (BankOperations.checkAccountId(accounts, accountId));
 		String amount = Services.cliInput("How much to withdraw? =>");
-		String[] list = {accountId, amount};
+		String[] list = { accountId, amount };
 		return list;
 	}
 
-	public static String[] depositFunds() {
+	public static String[] depositFunds(ArrayList<Account> accounts) {
 		System.out.println("Deposit Funds:");
-		String accountId = Services.cliInput("Deposit to which Account? =>");
+		String accountId = new String();
+		do {
+			accountId = Services.cliInput("Deposit to which Account? =>");
+		} while (BankOperations.checkAccountId(accounts, accountId));
 		String amount = Services.cliInput("How much to deposit? =>");
-		String[] list = {accountId, amount};
+		String[] list = { accountId, amount };
 		return list;
-		
+
 	}
 
+	public static String adminScreen() {
+		System.out.println("Admin Controls:");
+		System.out.println("0.  Logout");
+		System.out.println("1.  View Users");
+		System.out.println("2.  View Accounts");
+		System.out.println("3.  View Users/Accounts");
+		System.out.println("4.  Edit User");
+		System.out.println("5.  Edit Account");
+		String choice = Services.cliInput("Make a selection => ");
+		return choice;
+	}
 }

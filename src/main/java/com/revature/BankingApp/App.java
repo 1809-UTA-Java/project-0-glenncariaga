@@ -1,6 +1,5 @@
 package com.revature.BankingApp;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -27,105 +26,175 @@ public class App {
 		ArrayList<Transaction> transactions = store.transactions;
 		ArrayList<UserAccount> userAccounts = store.userAccounts;
 		User loggedInUser = new User();// tracking who is logged in.
+		String navigation = "menu"; // flag to allow navigation of program
+
+		users = Services.initialize(users);// creates SuperAdmin
 
 		// a welcome screen
 		Screen.splash();
 		// the login screen.
+		while (navigation == "menu") {// outer container
+			navigation = "login";
+			while (navigation == "login") {
 
-		boolean authenticate = false;
-		while (!authenticate) {
+				switch (Screen.loginScreen()) {
+				case "0":
+					BankOperations.logout(store);
+					break;
+				case "1":
+					User user = Screen.registration(users);
+					users.add(user);
+					navigation = "authenticate";
+					break;
+				case "2":
+					navigation = "authenticate";
+					break;
+				}
 
-			switch (Screen.loginScreen()) {
-			case "0":
-				BankOperations.logout(store);
-				break;
-			case "1":
-				User user = Screen.registration();
-				users.add(user);
-				break;
+				Services.clearTerminal();
 
-			default:
+				// this is the screen to login a user
+				int failedTries = 0;
 
-			}
+				while (navigation == "authenticate") {
+					String[] usrPswd = Screen.authentication();
+					if (BankOperations.authenticate(usrPswd, users)) {
+						navigation = "userScreen";
+					}
+					if (navigation != "userScreen") {
+						System.out.println("Authentication Failed.");
+					}
+					failedTries = failedTries + 1;
+					if (failedTries > 2) {
+						BankOperations.logout(store);
+						break;
+					}
+					if (navigation == "userScreen") {
+						loggedInUser = BankOperations.getUserInfo(usrPswd[0], users);
+						if (loggedInUser.role.equals("admin")) {
+							navigation = "adminScreen";
+						}
+					}
+				}
+			} // end of loginScreen
 
 			Services.clearTerminal();
 
-			// this is the screen to login a user
+			// the user screen, after authentication
 
-			int failedTries = 0;
-
-			while (!authenticate) {
-				String[] usrPswd = Screen.authentication();
-				authenticate = BankOperations.authenticate(usrPswd, users);
-				if (!authenticate) {
-					System.out.println("Authentication Failed.");
-				}
-				failedTries = failedTries + 1;
-				if (failedTries > 3) {
-					BankOperations.logout(store);
+			while (navigation == "userScreen") {
+				switch (Screen.userScreen(loggedInUser)) {
+				case "0":
+					navigation = "menu";
+					loggedInUser = null;
 					break;
-				}
-				if (authenticate) {
-					loggedInUser = BankOperations.getUserInfo(usrPswd[0], users);
-				}
-			}
-		}//end of loginScreen
+				case "1": //Add Account
+					if (Screen.addAccountScreen().contentEquals("y")) {
+						Account acct = BankOperations.openAccount();
+						userAccounts.add(BankOperations.linkAccount(acct.accountId, loggedInUser.userId));
+						accounts.add(acct);
+						Services.writeToFile(store, "store");
+						System.out.println("Account created: " + acct.accountId);
+						System.out.println("");
+						Services.writeToFile(store, "store");
+					}
+					break;
+				case "2": //View Accounts
+					Screen.viewAccounts(accounts, userAccounts, loggedInUser);
+					break;
+				case "3": //Transfer Funds
+					String[] transferFunds = Screen.transferFunds(accounts);
+					Account fromAccount = BankOperations.withdraw(transferFunds[1], Float.parseFloat(transferFunds[2]),
+							accounts, loggedInUser.userId, userAccounts);
+					Account toAccount = BankOperations.deposit(transferFunds[0], Float.parseFloat(transferFunds[2]),
+							accounts);
+					if (fromAccount != null && toAccount != null) {
+						for (Account acc : accounts) {
+							if (fromAccount.accountId.equals(acc.accountId)) {
+								acc = fromAccount;
+							}
+							if (toAccount.accountId.equals(acc.accountId)) {
+								acc = toAccount;
+							}
+						}
+						Services.writeToFile(store, "store");
+						System.out.println("Funds transfered");
+					}
+					break;
 
-		Services.clearTerminal();
+				case "4": //Withdrawals
+					String[] withdrawFunds = Screen.withdrawFunds(accounts);
+					Account newAccount = BankOperations.withdraw(withdrawFunds[0], Float.parseFloat(withdrawFunds[1]),
+							accounts, loggedInUser.userId, userAccounts);
+					if (newAccount != null) {
+						for (Account acc : accounts) {
+							if (newAccount.accountId.equals(acc.accountId)) {
+								acc = newAccount;
+							}
+						}
+						Services.writeToFile(store, "store");
+					}
 
-		// the user screen, after authentication
-		boolean userScreen = false;
-		
-		while (!userScreen) {
-			switch (Screen.userScreen(loggedInUser)) {
-			case "0":
-				BankOperations.logout(store);
-				break;
-			case "1":
-				if (Screen.addAccountScreen().contentEquals("y")) {
-					Account acct = BankOperations.openAccount();
-					userAccounts.add(BankOperations.linkAccount(acct.accountId, loggedInUser.userId));
-					accounts.add(acct);
+					break;
+
+				case "5": //Deposits
+					String[] depositFunds = Screen.depositFunds(accounts);
+					Account newDepositAccount = BankOperations.deposit(depositFunds[0],
+							Float.parseFloat(depositFunds[1]), accounts);
+					if (newDepositAccount != null) {
+						for (Account acc : accounts) {
+							if (newDepositAccount.accountId.equals(acc.accountId)) {
+								acc = newDepositAccount;
+							}
+						}
+					}
+					break;
+				case "6":
+					break;
+				}//end of switch case
+			} // end of userScreen switch case
+
+			while (navigation == "adminScreen") {
+				switch (Screen.adminScreen()) {
+				case "0":
+					navigation = "menu";
+					break;
+				case "1":
+					Admin.viewUsers(users);
+					break;
+				case "2":
+					Admin.viewAccounts(accounts);
+					break;
+				case "3":
+					Admin.viewUserAccounts(users, accounts, userAccounts);
+					break;
+				case "4":
+					User editUser = Admin.editUser(users);
+					if (editUser != null) {
+						for (User user : users) {
+							if (user.userId.equals(editUser.userId)) {
+								user = editUser;
+
+							}
+						}
+						Services.writeToFile(store, "store");
+					}
+					break;
+				case "5":
+					Account editAccount = Admin.editAccount(accounts);
+					if (editAccount != null) {
+						for (Account account : accounts) {
+							if (account.accountId.equals(editAccount.accountId)) {
+								account = editAccount;
+							}
+						}
+					}
 					Services.writeToFile(store, "store");
-				}
-				break;
-			case "2":
-				Screen.viewAccounts(accounts,userAccounts, loggedInUser);
-				break;
-			case "3":
-				String[] transferFunds =
-				Screen.transferFunds();
-				break;
-				
-			case "4":
-				String[] withdrawFunds =
-					Screen.withdrawFunds();
-				Account newAccount = BankOperations.withdraw(withdrawFunds[0],Float.parseFloat( withdrawFunds[1]), accounts, loggedInUser.userId, userAccounts);
-				if(newAccount != null) {
-					for(Account acc: accounts) {
-						if(newAccount.accountId.equals(acc.accountId)) {
-							acc = newAccount;
-						}
-					}
-				}
-				Services.writeToFile(store, "store");
-				break;
-				
-			case "5":
-				String[] depositFunds = 
-					Screen.depositFunds();
-				Account newDepositAccount = BankOperations.deposit(depositFunds[0], Float.parseFloat(depositFunds[1]), accounts);
-				if(newDepositAccount != null) {
-					for(Account acc: accounts) {
-						if(newDepositAccount.accountId.equals(acc.accountId)) {
-							acc = newDepositAccount;
-						}
-					}
-				}
-				break;
-			}
-		}// end of userScreen switch case
+					break;
+				}//end of switch case
+			}//end of adminScreen
 
+		} // end of outer container
 		Scanner sc = new Scanner(System.in);
 		sc.close();
 	}

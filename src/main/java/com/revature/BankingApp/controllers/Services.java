@@ -86,4 +86,21 @@ public class Services {
 	public static void clearTerminal() {
 	}
 
+	public static ArrayList<User> initialize(ArrayList<User> users) {
+		for(User user: users) {
+			if(user.userName.equals("SuperAdmin")) {
+				return users;
+			}
+		}
+		
+		User admin = new User();
+		admin.role = "admin";
+		admin.userId = "007";
+		admin.userName="SuperAdmin";
+		admin.password = "password";
+		users.add(admin);
+		
+		return users;
+	}
+
 }
