@@ -9,7 +9,9 @@ public class Transaction implements Serializable {
 	private static final long serialVersionUID = 791907848829295773L;
 	public String transactionID= UUID.randomUUID().toString();
 	public String userId;
+	public String toUserId;
 	public String accountId;
+	public String toAccountId;
 	public boolean reviewed = false;
 	public Boolean approval=null;
 	public String action;

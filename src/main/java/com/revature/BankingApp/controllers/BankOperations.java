@@ -1,6 +1,10 @@
 package com.revature.BankingApp.controllers;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 import com.revature.BankingApp.models.Account;
 import com.revature.BankingApp.models.Store;
@@ -164,5 +168,104 @@ public class BankOperations {
 		}
 		
 		return notValid;
+	}
+
+	public static Transaction requestApproval(HashMap<String, String> config) {
+		// this is the format of the hashmap
+//		config.put("userId",);
+//		config.put("accountId",);
+//		config.put("reviewed",));
+//		config.put("approval",);
+//		config.put("action",);
+//		config.put("amount",);
+		
+		//this is the corresponding transaction model
+//		public String userId;
+//		public String toUserId;
+//		public String accountId;
+//		public String toAccountId;
+//		public String action;
+//		public float amount;
+//		public String reviewer;
+		
+		//converts the config to a transaction object
+		Transaction transact = new Transaction();
+		transact.action = config.get("action");
+		transact.userId = config.get("userId");
+		if(config.containsKey("accountId")) {
+			transact.accountId = config.get("accountId");
+		}
+		if(config.containsKey("userId")) {
+			transact.accountId = config.get("userId");
+		}
+		if(config.containsKey("toUserId")) {
+			transact.accountId = config.get("toUserId");
+		}
+		if(config.containsKey("toAccountId")) {
+			transact.accountId = config.get("toAccountId");
+		}
+		if(config.containsKey("amount")) {
+			transact.amount = Float.parseFloat(config.get("amount"));
+		}
+		
+		return transact;
+		
+	}
+
+	public static Transaction quickApproval(Transaction transact, Store store) {
+		int countAccounts = 0;
+		for(UserAccount action: store.userAccounts) {
+			if(action.userId.equals(transact.userId)) {
+				countAccounts++;
+			}
+		}
+		
+		switch(transact.action){
+			case "deposit":
+				if(transact.amount<10000) {
+					transact.approval = true;
+					transact.reviewed = true;
+					transact.reviewer = "auto";
+					return transact;
+				}
+				break;
+			case "withdrawal":
+				if(transact.amount<10000) {
+					transact.approval = true;
+					transact.reviewed = true;
+					transact.reviewer = "auto";
+					return transact;
+				}
+				break;
+			case "transferFunds":
+				if(transact.amount<10000) {
+					transact.approval =true;
+					transact.reviewed = true;
+					transact.reviewer = "auto";
+					return transact;
+				}
+				break;
+			case "openAccount":
+				
+				if(countAccounts <= 0) {
+					transact.approval = true;
+					transact.reviewed = true;
+					transact.reviewer = "auto";
+					return transact;
+				}
+				break;
+			case "closeAccount":
+				if(countAccounts > 1) {
+					transact.approval = true;
+					transact.reviewed = true;
+					transact.reviewer = "auto";
+					return transact;
+				}
+				break;
+			case "addUserToAccount":
+				break;
+		}
+		
+		return null;
 	}
 }
