@@ -1,10 +1,8 @@
 package com.revature.BankingApp.controllers;
 
-import java.util.ArrayList;
-import java.util.Date;
+
 import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.revature.BankingApp.models.Account;
 import com.revature.BankingApp.models.Store;
@@ -26,7 +24,7 @@ public class BankOperations {
 		return ua;
 	}
 
-	public static ArrayList<Account> closeAccount(String accountId, ArrayList<Account> accounts) {
+	public static CopyOnWriteArrayList<Account> closeAccount(String accountId, CopyOnWriteArrayList<Account> accounts) {
 		int index = accounts.indexOf(accountId);
 		Account closingAccount = (Account) accounts.get(index);
 		closingAccount.open = true;
@@ -42,8 +40,8 @@ public class BankOperations {
 		return user;
 	}
 
-	public static Account withdraw(String acct, float withdrawal, ArrayList<Account> accounts, String userId,
-			ArrayList<UserAccount> userAccounts) {
+	public static Account withdraw(String acct, float withdrawal, CopyOnWriteArrayList<Account> accounts, String userId,
+			CopyOnWriteArrayList<UserAccount> userAccounts) {
 		boolean found = false;
 		boolean owner = false;
 		boolean closed = false;
@@ -95,7 +93,7 @@ public class BankOperations {
 		return activeAccount;
 	}
 
-	public static Account deposit(String acct, float deposit, ArrayList<Account> accounts) {
+	public static Account deposit(String acct, float deposit, CopyOnWriteArrayList<Account> accounts) {
 		boolean found = false;
 		boolean closed = false;
 		Account activeAccount = new Account();
@@ -130,7 +128,7 @@ public class BankOperations {
 		System.exit(0);
 	}
 
-	public static boolean authenticate(String[] usrPswd, ArrayList<User> users) {
+	public static boolean authenticate(String[] usrPswd, CopyOnWriteArrayList<User> users) {
 
 		for (User user : users) {
 			if (user.userName.equals(usrPswd[0]) && user.password.equals(usrPswd[1])) {
@@ -140,7 +138,7 @@ public class BankOperations {
 		return false;
 	}
 
-	public static User getUserInfo(String userName, ArrayList<User> users) {
+	public static User getUserInfo(String userName, CopyOnWriteArrayList<User> users) {
 		for (User user : users) {
 			if (user.userName.equals(userName)) {
 				return user;
@@ -149,7 +147,7 @@ public class BankOperations {
 		return null;
 	}
 
-	public static boolean checkUserNameDup(ArrayList<User> users, String entry) {
+	public static boolean checkUserNameDup(CopyOnWriteArrayList<User> users, String entry) {
 		boolean dup = false;
 		for (User user : users) {
 			if (user.userName.equals(entry)) {
@@ -159,14 +157,14 @@ public class BankOperations {
 		return dup;
 	}
 
-	public static boolean checkAccountId(ArrayList<Account> accounts, String accountId) {
+	public static boolean checkAccountId(CopyOnWriteArrayList<Account> accounts, String accountId) {
 		boolean notValid = true;
-		for(Account account: accounts) {
-			if(account.accountId.equals(accountId)) {
+		for (Account account : accounts) {
+			if (account.accountId.equals(accountId)) {
 				notValid = false;
 			}
 		}
-		
+
 		return notValid;
 	}
 
@@ -178,8 +176,8 @@ public class BankOperations {
 //		config.put("approval",);
 //		config.put("action",);
 //		config.put("amount",);
-		
-		//this is the corresponding transaction model
+
+		// this is the corresponding transaction model
 //		public String userId;
 //		public String toUserId;
 //		public String accountId;
@@ -187,85 +185,163 @@ public class BankOperations {
 //		public String action;
 //		public float amount;
 //		public String reviewer;
-		
-		//converts the config to a transaction object
+
+		// converts the config to a transaction object
 		Transaction transact = new Transaction();
 		transact.action = config.get("action");
 		transact.userId = config.get("userId");
-		if(config.containsKey("accountId")) {
+		if (config.containsKey("accountId")) {
 			transact.accountId = config.get("accountId");
 		}
-		if(config.containsKey("userId")) {
-			transact.accountId = config.get("userId");
+		if (config.containsKey("userId")) {
+			transact.userId = config.get("userId");
 		}
-		if(config.containsKey("toUserId")) {
-			transact.accountId = config.get("toUserId");
+		if (config.containsKey("toUserId")) {
+			transact.toUserId = config.get("toUserId");
 		}
-		if(config.containsKey("toAccountId")) {
-			transact.accountId = config.get("toAccountId");
+		if (config.containsKey("toAccountId")) {
+			transact.toAccountId = config.get("toAccountId");
 		}
-		if(config.containsKey("amount")) {
+		if (config.containsKey("amount")) {
 			transact.amount = Float.parseFloat(config.get("amount"));
 		}
-		
+
 		return transact;
-		
+
 	}
 
 	public static Transaction quickApproval(Transaction transact, Store store) {
 		int countAccounts = 0;
-		for(UserAccount action: store.userAccounts) {
-			if(action.userId.equals(transact.userId)) {
+		for (UserAccount action : store.userAccounts) {
+			if (action.userId.equals(transact.userId)) {
 				countAccounts++;
 			}
 		}
-		
-		switch(transact.action){
-			case "deposit":
-				if(transact.amount<10000) {
-					transact.approval = true;
-					transact.reviewed = true;
-					transact.reviewer = "auto";
-					return transact;
-				}
-				break;
-			case "withdrawal":
-				if(transact.amount<10000) {
-					transact.approval = true;
-					transact.reviewed = true;
-					transact.reviewer = "auto";
-					return transact;
-				}
-				break;
-			case "transferFunds":
-				if(transact.amount<10000) {
-					transact.approval =true;
-					transact.reviewed = true;
-					transact.reviewer = "auto";
-					return transact;
-				}
-				break;
-			case "openAccount":
-				
-				if(countAccounts <= 0) {
-					transact.approval = true;
-					transact.reviewed = true;
-					transact.reviewer = "auto";
-					return transact;
-				}
-				break;
-			case "closeAccount":
-				if(countAccounts > 1) {
-					transact.approval = true;
-					transact.reviewed = true;
-					transact.reviewer = "auto";
-					return transact;
-				}
-				break;
-			case "addUserToAccount":
-				break;
+
+		switch (transact.action) {
+		case "deposit":
+			if (transact.amount < 10000) {
+				transact.approval = true;
+				transact.reviewed = true;
+				transact.reviewer = "auto";
+				return transact;
+			}
+			break;
+		case "withdrawal":
+			if (transact.amount < 10000) {
+				transact.approval = true;
+				transact.reviewed = true;
+				transact.reviewer = "auto";
+				return transact;
+			}
+			break;
+		case "transferFunds":
+			if (transact.amount < 10000) {
+				transact.approval = true;
+				transact.reviewed = true;
+				transact.reviewer = "auto";
+				return transact;
+			}
+			break;
+		case "openAccount":
+
+			if (countAccounts <= 0) {
+				transact.approval = true;
+				transact.reviewed = true;
+				transact.reviewer = "auto";
+				return transact;
+			}
+			break;
+		case "closeAccount":
+			if (countAccounts > 1) {
+				transact.approval = true;
+				transact.reviewed = true;
+				transact.reviewer = "auto";
+				return transact;
+			}
+			break;
+		case "addUserToAccount":
+			break;
+		}
+
+		return null;
+	}
+
+	public static Store processApproval(Transaction transact, Store store, User activeUser) {
+		switch (transact.action) {
+		case "addAccount":
+			store = addAccountAction(store, transact);
+			break;
+		case "transferFunds":
+			store = transferFundsAction(store, transact);
+			break;
+		case "withdraw":
+			store = withdrawalActions(store, transact);
+			break;
+		case "deposit":
+			store = depositActions(store,transact);
+			break;
+		}
+		transact.approval =true;
+		transact.reviewer =activeUser.userId;
+		for(Transaction element : store.transactions) {
+			if(element.transactionID.equals(transact.transactionID)) {
+				element = transact;
+			}
 		}
 		
-		return null;
+		return store;
+	}
+
+	public static Store depositActions(Store store, Transaction transact) {
+		Account newDepositAccount = BankOperations.deposit(transact.accountId,
+				transact.amount, store.accounts);
+		if (newDepositAccount != null) {
+			for (Account acc : store.accounts) {
+				if (newDepositAccount.accountId.equals(acc.accountId)) {
+					acc = newDepositAccount;
+				}
+			}
+		}
+		return store;
+	}
+
+	public static Store withdrawalActions(Store store, Transaction transact) {
+		Account newAccount = BankOperations.withdraw(transact.accountId,
+				transact.amount, store.accounts, transact.userId, store.userAccounts);
+		if (newAccount != null) {
+			for (Account acc : store.accounts) {
+				if (newAccount.accountId.equals(acc.accountId)) {
+					acc = newAccount;
+				}
+			}
+
+		}
+		return store;
+	}
+
+	public static Store transferFundsAction(Store store, Transaction transact) {
+		Account fromAccount = BankOperations.withdraw(transact.toAccountId, transact.amount, store.accounts, transact.userId, store.userAccounts);
+		Account toAccount = BankOperations.deposit(transact.accountId, transact.amount,
+				store.accounts);
+		if (fromAccount != null && toAccount != null) {
+			for (Account acc : store.accounts) {
+				if (fromAccount.accountId.equals(acc.accountId)) {
+					acc = fromAccount;
+				}
+				if (toAccount.accountId.equals(acc.accountId)) {
+					acc = toAccount;
+				}
+			}
+		}
+		return store;
+	}
+
+	public static Store addAccountAction(Store store, Transaction transact) {
+		Account acct = BankOperations.openAccount();
+		store.userAccounts.add(BankOperations.linkAccount(acct.accountId, transact.userId));
+		store.accounts.add(acct);
+		store.transactions.add(transact);
+		return store;
 	}
 }

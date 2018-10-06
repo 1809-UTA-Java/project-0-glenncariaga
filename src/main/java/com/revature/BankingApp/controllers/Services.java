@@ -7,8 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.revature.BankingApp.models.Account;
 import com.revature.BankingApp.models.Store;
@@ -52,33 +52,33 @@ public class Services {
 			obj =  (Store) ois.readObject();
 		} catch (ClassNotFoundException e) {
 			Store store = new Store();
-			store.accounts = new ArrayList<Account>();
-			store.transactions = new ArrayList<Transaction>();
-			store.users = new ArrayList<User>();
-			store.userAccounts = new ArrayList<UserAccount>();
+			store.accounts = new CopyOnWriteArrayList<Account>();
+			store.transactions = new CopyOnWriteArrayList<Transaction>();
+			store.users = new CopyOnWriteArrayList<User>();
+			store.userAccounts = new CopyOnWriteArrayList<UserAccount>();
 			return store;
 		} catch (FileNotFoundException ex) {
 			Store store = new Store();
-			store.accounts = new ArrayList<Account>();
-			store.transactions = new ArrayList<Transaction>();
-			store.users = new ArrayList<User>();
-			store.userAccounts = new ArrayList<UserAccount>();
+			store.accounts = new CopyOnWriteArrayList<Account>();
+			store.transactions = new CopyOnWriteArrayList<Transaction>();
+			store.users = new CopyOnWriteArrayList<User>();
+			store.userAccounts = new CopyOnWriteArrayList<UserAccount>();
 			return store;
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
 
 		if (obj.accounts == null) {
-			obj.accounts = new ArrayList<Account>();
+			obj.accounts = new CopyOnWriteArrayList<Account>();
 		}
 		if (obj.transactions == null) {
-			obj.transactions = new ArrayList<Transaction>();
+			obj.transactions = new CopyOnWriteArrayList<Transaction>();
 		}
 		if (obj.users == null) {
-			obj.users = new ArrayList<User>();
+			obj.users = new CopyOnWriteArrayList<User>();
 		}
 		if (obj.userAccounts == null) {
-			obj.userAccounts = new ArrayList<UserAccount>();
+			obj.userAccounts = new CopyOnWriteArrayList<UserAccount>();
 		}
 		return obj;
 	}
@@ -86,7 +86,7 @@ public class Services {
 	public static void clearTerminal() {
 	}
 
-	public static ArrayList<User> initialize(ArrayList<User> users) {
+	public static CopyOnWriteArrayList<User> initialize(CopyOnWriteArrayList<User> users) {
 		for(User user: users) {
 			if(user.userName.equals("SuperAdmin")) {
 				return users;

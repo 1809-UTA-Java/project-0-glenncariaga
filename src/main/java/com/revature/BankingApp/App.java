@@ -3,7 +3,9 @@ package com.revature.BankingApp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.revature.BankingApp.controllers.BankOperations;
 import com.revature.BankingApp.controllers.Services;
@@ -32,10 +34,10 @@ public class App {
 		 * though preferably, user logs out so the store is saved to file.
 		 */
 		Store store = Services.readToObj("store");
-		ArrayList<User> users = store.users;
-		ArrayList<Account> accounts = store.accounts;
-		ArrayList<Transaction> transactions = store.transactions;
-		ArrayList<UserAccount> userAccounts = store.userAccounts;
+		CopyOnWriteArrayList<User> users = store.users;
+		CopyOnWriteArrayList<Account> accounts = store.accounts;
+		CopyOnWriteArrayList<Transaction> transactions = store.transactions;
+		CopyOnWriteArrayList<UserAccount> userAccounts = store.userAccounts;
 		User loggedInUser = new User();// tracking who is logged in.
 		String navigation = "menu"; // flag to allow navigation of program
 
@@ -63,6 +65,8 @@ public class App {
 				case "2":
 					navigation = "authenticate";
 					break;
+				default:
+					System.out.println("Invalid selection");
 				}
 
 				Services.clearTerminal();
@@ -71,6 +75,7 @@ public class App {
 				int failedTries = 0;
 
 				while (navigation == "authenticate") {
+					// returns an array of [0]username, [1]password
 					String[] usrPswd = Screen.authentication();
 					if (BankOperations.authenticate(usrPswd, users)) {
 						navigation = "userScreen";
@@ -122,14 +127,8 @@ public class App {
 
 						// if approved, a Transaction object is returned, otherwise, null is returned
 						if (quickApprove != null) {
-							Account acct = BankOperations.openAccount();
-							userAccounts.add(BankOperations.linkAccount(acct.accountId, loggedInUser.userId));
-							accounts.add(acct);
-							Services.writeToFile(store, "store");
-							System.out.println("Account created: " + acct.accountId);
-							System.out.println("");
+							store = BankOperations.addAccountAction(store, quickApprove);
 							addAccount = quickApprove;
-							Services.writeToFile(store, "store");
 						}
 						// saving the information to store
 						transactions.add(addAccount);
@@ -161,21 +160,7 @@ public class App {
 					Transaction quickApprove = BankOperations.quickApproval(reqTransferFunds, store);
 
 					if (quickApprove != null) {
-						Account fromAccount = BankOperations.withdraw(transferFunds[1],
-								Float.parseFloat(transferFunds[2]), accounts, loggedInUser.userId, userAccounts);
-						Account toAccount = BankOperations.deposit(transferFunds[0], Float.parseFloat(transferFunds[2]),
-								accounts);
-						if (fromAccount != null && toAccount != null) {
-							for (Account acc : accounts) {
-								if (fromAccount.accountId.equals(acc.accountId)) {
-									acc = fromAccount;
-								}
-								if (toAccount.accountId.equals(acc.accountId)) {
-									acc = toAccount;
-								}
-							}
-							System.out.println("Funds transfered");
-						}
+						store = BankOperations.transferFundsAction(store, quickApprove);
 						reqTransferFunds = quickApprove;
 					}
 
@@ -191,21 +176,13 @@ public class App {
 					config1.put("accountId", withdrawFunds[0]);
 					config1.put("amount", withdrawFunds[1]);
 					config1.put("action", "withdraw");
+					config1.put("userId", loggedInUser.userId);
 
 					Transaction reqWithdrawal = BankOperations.requestApproval(config1);
 					Transaction reqQuickApprove = BankOperations.quickApproval(reqWithdrawal, store);
 
 					if (reqQuickApprove != null) {
-						Account newAccount = BankOperations.withdraw(withdrawFunds[0],
-								Float.parseFloat(withdrawFunds[1]), accounts, loggedInUser.userId, userAccounts);
-						if (newAccount != null) {
-							for (Account acc : accounts) {
-								if (newAccount.accountId.equals(acc.accountId)) {
-									acc = newAccount;
-								}
-							}
-
-						}
+						store = BankOperations.withdrawalActions(store, reqQuickApprove);
 						reqWithdrawal = reqQuickApprove;
 					}
 
@@ -221,19 +198,12 @@ public class App {
 					config2.put("accountId", depositFunds[0]);
 					config2.put("amount", depositFunds[1]);
 					config2.put("action", "deposit");
+					config2.put("userId", loggedInUser.userId);
 
 					Transaction reqDepositFunds = BankOperations.requestApproval(config2);
 					Transaction quickDepositApprove = BankOperations.quickApproval(reqDepositFunds, store);
 					if (quickDepositApprove != null) {
-						Account newDepositAccount = BankOperations.deposit(depositFunds[0],
-								Float.parseFloat(depositFunds[1]), accounts);
-						if (newDepositAccount != null) {
-							for (Account acc : accounts) {
-								if (newDepositAccount.accountId.equals(acc.accountId)) {
-									acc = newDepositAccount;
-								}
-							}
-						}
+						store = BankOperations.depositActions(store, quickDepositApprove);
 						reqDepositFunds = quickDepositApprove;
 					}
 					transactions.add(reqDepositFunds);
@@ -241,6 +211,8 @@ public class App {
 					break;
 				case "6":
 					break;
+				default:
+					System.out.println("Invalid selection");
 				}// end of switch case
 			} // end of userScreen switch case
 
@@ -263,8 +235,9 @@ public class App {
 					if (editUser != null) {
 						for (User user : users) {
 							if (user.userId.equals(editUser.userId)) {
-								user = editUser;
-
+								user.role = editUser.role;
+								user.password = editUser.password;
+								user.userName = editUser.userName;
 							}
 						}
 						Services.writeToFile(store, "store");
@@ -275,17 +248,63 @@ public class App {
 					if (editAccount != null) {
 						for (Account account : accounts) {
 							if (account.accountId.equals(editAccount.accountId)) {
-								account = editAccount;
+								account.balance = editAccount.balance;
+								account.open = editAccount.open;
 							}
 						}
 					}
 					Services.writeToFile(store, "store");
 					break;
+				case "6":
+
+					for (Transaction transact : transactions) {
+						if (transact.reviewed == false) {
+							if (Screen.approveTransaction(transact)) {
+								store = BankOperations.processApproval(transact, store, loggedInUser);
+							} else {
+								transact.approval = false;
+							}
+							transact.reviewed = true;
+						}
+					}
+					
+					break;
+				default:
+					System.out.println("Invalid selection");
 				}// end of switch case
 			} // end of adminScreen
+			while (navigation == "employee") {
+				switch (Screen.employeeScreen()) {
+				case "0":
+					navigation = "menu";
+					break;
+				case "1":
+					Admin.viewUsers(users);
+					break;
+				case "2":
+					Admin.viewAccounts(accounts);
+					break;
+				case "3":
+					Admin.viewUserAccounts(users, accounts, userAccounts);
+					break;
+				case "4":
+					for (Transaction transact : transactions) {
+						if (transact.reviewed == false) {
+							if (Screen.approveTransaction(transact)) {
+								store = BankOperations.processApproval(transact, store, loggedInUser);
+							} else {
+								transact.approval = false;
+							}
+							transact.reviewed = true;
+						}
+					}
+					break;
+				}// end of switch case
 
+			}//end of employee screen
 		} // end of outer container
 		Scanner sc = new Scanner(System.in);
 		sc.close();
 	}
+
 }
