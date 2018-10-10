@@ -74,6 +74,7 @@ public class Screen {
 		}
 
 		User user = BankOperations.addNewUser(userName, password);
+		
 		return user;
 	}
 

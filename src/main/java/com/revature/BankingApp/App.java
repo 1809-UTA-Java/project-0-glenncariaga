@@ -34,15 +34,13 @@ public class App {
 		 * though preferably, user logs out so the store is saved to file.
 		 */
 		Store store = Services.readToObj("store");
-		CopyOnWriteArrayList<User> users = store.users;
+		CopyOnWriteArrayList<User> users = Services.getAllUsers();
 		CopyOnWriteArrayList<Account> accounts = store.accounts;
 		CopyOnWriteArrayList<Transaction> transactions = store.transactions;
 		CopyOnWriteArrayList<UserAccount> userAccounts = store.userAccounts;
 		User loggedInUser = new User();// tracking who is logged in.
 		String navigation = "menu"; // flag to allow navigation of program
-
-		users = Services.initialize(users);// creates SuperAdmin
-
+		
 		// a welcome screen
 		Screen.splash();
 		/**
@@ -60,6 +58,7 @@ public class App {
 				case "1":
 					User user = Screen.registration(users);
 					users.add(user);
+					Services.insertUser(user);
 					navigation = "authenticate";
 					break;
 				case "2":
