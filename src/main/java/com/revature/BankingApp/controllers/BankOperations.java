@@ -205,7 +205,7 @@ public class BankOperations {
 		if (config.containsKey("amount")) {
 			transact.amount = Float.parseFloat(config.get("amount"));
 		}
-
+		
 		return transact;
 
 	}
@@ -281,6 +281,8 @@ public class BankOperations {
 		case "deposit":
 			store = depositActions(store,transact);
 			break;
+		case "jointAccount":
+			store = jointAccountAction(store,transact);
 		}
 		transact.approval =true;
 		transact.reviewer =activeUser.userId;
@@ -291,6 +293,26 @@ public class BankOperations {
 		}
 		
 		return store;
+	}
+	
+	public static Store jointAccountAction(Store store, Transaction transact) {
+		UserAccount userAccount = BankOperations.jointAccount(store, transact);
+		if(userAccount!=null) {
+			store.userAccounts.add(userAccount);
+		}
+		return store;
+	}
+
+	private static UserAccount jointAccount(Store store, Transaction transact) {
+		UserAccount ua = new UserAccount();
+		for(UserAccount userAccount: store.userAccounts) {
+		//check ownership of the account
+			if(transact.userId.equals(userAccount.userId)&&transact.accountId.equals(userAccount.AccountId) ) {
+				ua.AccountId = transact.accountId;
+				ua.userId = transact.toUserId;
+			}
+		}
+		return ua;
 	}
 
 	public static Store depositActions(Store store, Transaction transact) {
@@ -343,5 +365,19 @@ public class BankOperations {
 		store.accounts.add(acct);
 		store.transactions.add(transact);
 		return store;
+	}
+
+	public static boolean checkOwnership(CopyOnWriteArrayList<UserAccount> userAccounts, String acct, String user) {
+		boolean ownership = false;
+		for(UserAccount ua: userAccounts) {
+			if(ua.AccountId.equals(acct)&&ua.userId.equals(user)) {
+				ownership = true;
+			}
+		}
+		
+		if(ownership==false) {
+			System.out.println("You don't own that account or the account does not exist");
+		}
+		return ownership;
 	}
 }

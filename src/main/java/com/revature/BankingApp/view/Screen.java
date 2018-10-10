@@ -178,4 +178,15 @@ public class Screen {
 		choice = Services.cliInput("Entry => ");
 		return choice;
 	}
+
+	public static String[] jointAccount(Store store,String activeUser) {
+			String[] input = new String[2];
+			System.out.println("Add User to Account");
+			input[0] =Services.cliInput("Enter a userId =>");
+			do {
+				input[1] = Services.cliInput("Enter Account to Share: => ");
+			}while(!BankOperations.checkOwnership(store.userAccounts, input[1], activeUser));
+			
+			return input;
+	}
 }

@@ -208,7 +208,19 @@ public class App {
 					transactions.add(reqDepositFunds);
 					Services.writeToFile(store, "store");
 					break;
-				case "6":
+				case "6": //Add users to account
+					//returns an array [0]account selected [1]userid to add
+					String[] jointAccount =Screen.jointAccount(store, loggedInUser.userId);
+					
+					HashMap<String,String>config6 =new HashMap<>();
+					config6.put("accountId", jointAccount[0]);
+					config6.put("userId",loggedInUser.userId);
+					config6.put("action","jointAccount");
+					config6.put("toUserId",jointAccount[1]);
+					
+					Transaction jointAccounts = BankOperations.requestApproval(config6);
+					transactions.add(jointAccounts);
+					Services.writeToFile(store, "store");
 					break;
 				default:
 					System.out.println("Invalid selection");
